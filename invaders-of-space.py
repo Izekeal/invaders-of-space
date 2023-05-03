@@ -157,7 +157,7 @@ def checkKeys(): # Update this function to add a "big" laser or bomb shot or som
     if keyboard.up: # Shoot a Big Laser, this laser clips through the bases and doesn't decay when hitting an alien or the boss
         if player.bigLaserCount > 0:
             if player.bigLaserActive == 1:
-                sounds.gun.play() # TO-DO: create a new sfx for the Big Laser
+                sounds.biglaser.play()
                 player.bigLaserCount -= 1
                 player.bigLaserActive = 0
                 clock.schedule(makeBigLaserActive, 1.0)
