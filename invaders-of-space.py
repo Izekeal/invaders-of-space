@@ -346,11 +346,25 @@ def updateBoss():
             lasers[len(lasers)-1].status = 0
             lasers[len(lasers)-1].type = 0
     else: # TO-DO: Add in the scaling of the size of the boss png based off of the current level number, if that is even possible
-        if randint (0, 1200) == 0:
+        if randint(0, 1200) == 0:
+            boss.spawnPoint = randint(0,3) # Boss spawns in at one of four spawn points, chosen randomly
             boss.active = True
-            boss.x = 800 # TO-DO: Can have different "spawn points" for the boss instead of this fixed position
-            boss.y = 100
-            boss.direction = 0
+            if boss.spawnPoint == 0:
+                boss.x = 800
+                boss.y = 100
+                boss.direction = 0
+            if boss.spawnPoint == 1:
+                boss.x = 50
+                boss.y = 100
+                boss.direction = 1
+            if boss.spawnPoint == 2:
+                boss.x = 300
+                boss.y = 0
+                boss.direction = randint(0,1) # Choose a random direction of left or right since this spawns boss in the middle of the stage
+            if boss.spawnPoint == 3:
+                boss.x = 800
+                boss.y = 200
+                boss.direction = 0
 
 def init():
     global lasers, powerUps, bigLasers, score, player, moveSequence, moveCounter, moveDelay, level, boss
