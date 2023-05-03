@@ -255,12 +255,8 @@ def checkPowerUpHit(p):
             #sounds.powerupbl.play() # TO-DO: Need to create this sfx
         if powerUps[p].type == 2: # Player has collected a Shield power up
             player.shieldActive = 1
-            clock.schedule(stopShield, 5.0)
-            # sounds.powerups.play() TO-DO: Add this sfx
-            #shieldPowerUp() # TO-DO: Need to create this function
-        
-#def shieldPowerUp():
-    
+            # clock.schedule(stopShield, 5.0) To avoid a bug, consider not using clock.schedule
+            # sounds.powerups.play() TO-DO: Add this sfx    
 
 def checkPlayerLaserHit(l):
     global score, boss
@@ -334,7 +330,12 @@ def updateBoss():
         if boss.direction == 0:
             boss.x -= (1*level)
         else: boss.x += (1*level)
-        if boss.x < 100: boss.direction = 1 # This lets the boss move left and then right.  TO-DO: Could be fun to add a "juke" to the boss' movement, a random chance for the boss to change direction instead of waiting to collide with the edge of the screen
+        # add the logic to randomly change boss' direction here, start doing this in level 3
+        if level >= 3:
+            if randint(0, 150) == 0:
+                if boss.direction == 0:
+                    boss.direction = 1
+        if boss.x < 100: boss.direction = 1 # This lets the boss move left and then right.
         if boss.x > 700: boss.direction = 0
         if boss.y > 500: # Boss has reached the bottom of the screen, player doesn't immediately game over like they do with an alien reaching the bottom
             sounds.explosion.play()
