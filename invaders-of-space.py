@@ -96,7 +96,7 @@ def readHighScore():
             highScore.append(line.rstrip())
     except:
         pass
-    highScore.append(str(score)+ " " + player.name)
+    highScore.append("LEVEL" + " " + str(level) + " " + str(score) + " " + player.name)
     highScore.sort(key=natural_key, reverse=True)
 
 def natural_key(string_):
