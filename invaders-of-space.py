@@ -215,7 +215,7 @@ def updateLasers():
 def updatePowerUps(): # Scroll the power ups to the bottom of the screen, if they reach the bottom without colliding with the player, they despawn
     global powerUps
     for p in range(len(powerUps)):
-        powerUps[p].y += 4 # TO-DO: Make sure that this is a good speed for the powerups to travel at
+        powerUps[p].y += 3 # TO-DO: Make sure that this is a good speed for the powerups to travel at
         checkPowerUpHit(p)
         if powerUps[p].y > 600:
             powerUps[p].status = 1
