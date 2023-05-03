@@ -195,7 +195,7 @@ def updateLasers():
                 lasers[l].status = 1
     for l in range(len(bigLasers)):
         if bigLasers[l].type == 1:
-            bigLasers[l].y -= 10 # Big laser moves faster than the normal player laser, TO-DO: Dial this number in until I have a good "game feel" for it being fast but not so fast that it's hard to line up multiple hits with one shot
+            bigLasers[l].y -= 8 # Big laser moves faster than the normal player laser
             checkBigLaserHit(l)
             if bigLasers[l].y < 10: # Has the Big Laser left the top of the screen?
                 bigLasers[l].status = 1
