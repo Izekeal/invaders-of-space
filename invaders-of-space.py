@@ -24,6 +24,7 @@ def draw(): # Pygame Zero draw function
         drawLives()
         drawBigLasers()
         drawPowerUps()
+        drawShield()
         if player.status >= 30: # Has the player's ship exploded?
             if player.lives > 0:
                 drawCentreText("YOU WERE HIT!\nPress Enter to re-spawn")
@@ -139,6 +140,10 @@ def drawLasers():
 def drawPowerUps():
     for p in range(len(powerUps)): powerUps[p].draw()
 
+def drawShield():
+    if player.shieldActive == 1:
+        screen.blit("playershield", (player.x-35, player.y-35))
+
 def checkKeys(): # Update this function to add a "big" laser or bomb shot or something when the player presses down or up.  Maybe up is a shield, and down is a bomb that travels to the centre of the screen and then explodes
     global player, score
     if keyboard.left:
@@ -173,6 +178,10 @@ def makeLaserActive():
 def makeBigLaserActive():
     global player
     player.bigLaserActive = 1
+
+def stopShield():
+    global player
+    player.shieldActive = 0
 
 def checkBases():
     for b in range(len(bases)):
@@ -223,9 +232,14 @@ def listCleanup(l):
 def checkLaserHit(l):
     global player
     if player.collidepoint((lasers[l].x, lasers[l].y)):
-        sounds.explosion.play()
-        player.status = 1
-        lasers[l].status = 1
+        if player.shieldActive == 1:
+            #play a sound?
+            lasers[l].status = 1
+            stopShield() # Do I also need to cancel the clock timer from checkPowerUpHit()?
+        else:
+            sounds.explosion.play()
+            player.status = 1
+            lasers[l].status = 1
     for b in range(len(bases)):
         if bases[b].collideLaser(lasers[l]):
             bases[b].height -= 10
@@ -234,14 +248,19 @@ def checkLaserHit(l):
 def checkPowerUpHit(p):
     global score, player
     if player.collidepoint((powerUps[p].x, powerUps[p].y)):
-        #sounds.powerup.play() # TO-DO: Need to create this sfx
         powerUps[p].status = 1
         score += 100
         if powerUps[p].type == 1: # Player has collected a Big Laser power up
             player.bigLaserCount += 1
-        # if powerUps[p].type == 2: # Player has collected a Shield power up
+            #sounds.powerupbl.play() # TO-DO: Need to create this sfx
+        if powerUps[p].type == 2: # Player has collected a Shield power up
+            player.shieldActive = 1
+            clock.schedule(stopShield, 5.0)
+            # sounds.powerups.play() TO-DO: Add this sfx
             #shieldPowerUp() # TO-DO: Need to create this function
         
+#def shieldPowerUp():
+    
 
 def checkPlayerLaserHit(l):
     global score, boss
@@ -253,13 +272,15 @@ def checkPlayerLaserHit(l):
             lasers[l].status = 1
             aliens[a].status = 1
             score += 1000
-            if randint(0, 9) == 0: # 1 in 10 chance to spawn a power up. TO-DO: Change this to a more controllable situation, something where a variable decrements and when it hits 0 a power up is spawned.
-                # if randint(0, 5) < 4: # 0, 1, 2, 3 spawn a big laser. 4, 5 spawn a shield
-                powerUps.append(Actor("laserpowerup", (aliens[a].x, aliens[a].y)))
-                powerUps[len(powerUps)-1].status = 0
-                powerUps[len(powerUps)-1].type = 1 # 1 = Big Laser, 2 = Shield
-                #else:
-                 #   shieldPowerUp.append(Actor("shield", (aliens[a].x, aliens[a].y)))
+            if randint(0, 7) == 0: # 1 in 8 chance to spawn a power up. TO-DO: Change this to a more controllable situation, something where a variable decrements and when it hits 0 a power up is spawned.
+                if randint(0, 5) < 4: # 0, 1, 2, 3 spawn a big laser. 4, 5 spawn a shield
+                    powerUps.append(Actor("laserpowerup", (aliens[a].x, aliens[a].y)))
+                    powerUps[len(powerUps)-1].status = 0
+                    powerUps[len(powerUps)-1].type = 1 # 1 = Big Laser, 2 = Shield
+                else:
+                    powerUps.append(Actor("shieldpowerup", (aliens[a].x, aliens[a].y)))
+                    powerUps[len(powerUps)-1].status = 0
+                    powerUps[len(powerUps)-1].type = 2 # 1 = Big Laser, 2 = Shield
     if boss.active:
         if boss.collidepoint((lasers[l].x, lasers[l].y)):
             lasers[l].status = 1
@@ -335,7 +356,7 @@ def init():
     level = 1
     initAliens()
     initBases()
-    moveCounter = moveSequence = player.status = score = player.laserCountdown = 0
+    moveCounter = moveSequence = player.status = score = player.laserCountdown = player.shieldActive = 0
     lasers = []
     bigLasers = []
     powerUps = []
