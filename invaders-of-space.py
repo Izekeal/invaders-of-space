@@ -96,7 +96,7 @@ def readHighScore():
             highScore.append(line.rstrip())
     except:
         pass
-    highScore.append("LEVEL" + " " + str(level) + " " + str(score) + " " + player.name)
+    highScore.append("LEVEL" + " " + str(level) + "         " + str(score) + "                 " + player.name)
     highScore.sort(key=natural_key, reverse=True)
 
 def natural_key(string_):
@@ -112,9 +112,10 @@ def drawHighScore():
     global highScore
     y = 0
     screen.draw.text("TOP SCORES", midtop=(400, 30), owidth=0.5, ocolor=(255,255,255), color=(0,64,255), fontsize=60)
+    screen.draw.text("LEVEL        SCORE          NAME", topleft=(10, 90), owidth=0.5, ocolor=(255,255,255), color=(0,64,255), fontsize=60)
     for line in highScore:
         if y < 400:
-            screen.draw.text(line, midtop=(400, 100+y), owidth=0.5, ocolor=(0,0,255), color=(255,255,0), fontsize=50)
+            screen.draw.text(line, topleft=(10, 150+y), owidth=0.5, ocolor=(0,0,255), color=(255,255,0), fontsize=50)
             y += 50
     screen.draw.text("Press Escape to play again" , center=(400, 550), owidth=0.5, ocolor=(255,255,255), color=(255,64,0), fontsize=60)
 
