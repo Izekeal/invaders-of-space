@@ -360,7 +360,7 @@ def updateBoss():
                 boss.direction = 1
             if boss.spawnPoint == 2:
                 boss.x = 300
-                boss.y = 0
+                boss.y = 25
                 boss.direction = randint(0,1) # Choose a random direction of left or right since this spawns boss in the middle of the stage
             if boss.spawnPoint == 3:
                 boss.x = 800
