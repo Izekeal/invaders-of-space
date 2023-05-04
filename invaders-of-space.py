@@ -39,7 +39,7 @@ def drawCentreText(t):
     screen.draw.text(t , center=(400,300), owidth=0.5, ocolor=(255,255,255), color=(255,64,0), fontsize=60)
 
 def update(): # Pygame Zero update function
-    global moveCounter, player, gameStatus, lasers, level, boss
+    global moveCounter, player, gameStatus, lasers, bigLasers, powerUps, level, boss
     if gameStatus == 0:
         if keyboard.RETURN and player.name != "":
             gameStatus = 1
@@ -268,7 +268,7 @@ def checkPlayerLaserHit(l):
             lasers[l].status = 1
             aliens[a].status = 1
             score += 1000
-            if randint(0, 7) == 0: # 1 in 8 chance to spawn a power up. TO-DO: Change this to a more controllable situation, something where a variable decrements and when it hits 0 a power up is spawned.
+            if randint(0, 6) == 0: # 1 in 7 chance to spawn a power up. TO-DO: Change this to a more controllable situation, something where a variable decrements and when it hits 0 a power up is spawned.
                 if randint(0, 5) < 4: # 0, 1, 2, 3 spawn a big laser. 4, 5 spawn a shield
                     powerUps.append(Actor("laserpowerup", (aliens[a].x, aliens[a].y)))
                     powerUps[len(powerUps)-1].status = 0
