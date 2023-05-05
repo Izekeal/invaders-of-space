@@ -39,7 +39,7 @@ def drawCentreText(t):
     screen.draw.text(t , center=(400,300), owidth=0.5, ocolor=(255,255,255), color=(255,64,0), fontsize=60)
 
 def update(): # Pygame Zero update function
-    global moveCounter, player, gameStatus, lasers, bigLasers, powerUps, level, boss
+    global moveCounter, player, gameStatus, lasers, bigLasers, powerUps, level, boss, bossJuke
     if gameStatus == 0:
         if keyboard.RETURN and player.name != "":
             gameStatus = 1
@@ -67,6 +67,7 @@ def update(): # Pygame Zero update function
                     if len(aliens) == 0: # Level has been cleared
                         level += 1
                         boss.active = False
+                        bossJuke = 450/level
                         initAliens()
                         initBases()
                 else: # Player is out of lives, game over
@@ -329,16 +330,16 @@ def updateAliens():
     moveSequence += 1
     if moveSequence == 40: moveSequence = 0
 
-def updateBoss(): # TO-DO: Update the x and y movement speed calculations for the boss.  Currently it moves much too quickly beginning with level 3.  Something like (0.5*level)+1 for x might work better
+def updateBoss():
     global boss, level, player, lasers
     if boss.active:
         boss.y += (0.3*level) # Note: X and Y coordinates can be decimals, good to know
         if boss.direction == 0:
-            boss.x -= (1*level)
-        else: boss.x += (1*level)
+            boss.x -= (0.5*level) + 1 # Eventually replace this with a constant
+        else: boss.x += (0.5*level) + 1
         # add the logic to randomly change boss' direction here, start doing this in level 3.  Is there a better way to do this than an If/Else?
         if level >= 3:
-            if randint(0, 150) == 0:
+            if randint(0, bossJuke) == 0:
                 if boss.direction == 0:
                     boss.direction = 1
         if boss.x < 100: boss.direction = 1 # This lets the boss move left and then right.
@@ -352,7 +353,7 @@ def updateBoss(): # TO-DO: Update the x and y movement speed calculations for th
             lasers[len(lasers)-1].status = 0
             lasers[len(lasers)-1].type = 0
     else: # TO-DO: Add in the scaling of the size of the boss png based off of the current level number, if that is even possible
-        if randint(0, 1200) == 0:
+        if randint(0, 200) == 0:
             boss.spawnPoint = randint(0,3) # Boss spawns in at one of four spawn points, chosen randomly
             boss.active = True
             if boss.spawnPoint == 0:
@@ -373,8 +374,8 @@ def updateBoss(): # TO-DO: Update the x and y movement speed calculations for th
                 boss.direction = 0
 
 def init():
-    global lasers, powerUps, bigLasers, score, player, moveSequence, moveCounter, moveDelay, level, boss, powerUpSpawn
-    level = 1
+    global lasers, powerUps, bigLasers, score, player, moveSequence, moveCounter, moveDelay, level, boss, powerUpSpawn, bossJuke
+    level = 5
     initAliens()
     initBases()
     moveCounter = moveSequence = player.status = score = player.laserCountdown = player.shieldActive = 0 # what is player.laserCountdown from?  It's not being used anywhere
@@ -383,6 +384,7 @@ def init():
     powerUps = []
     # moveDelay = 30 # This is likely no longer necessary, as moveDelay is being defined/updated in initAliens(), need to check if I still need to reference it in global at the top of this function
     boss.active = False
+    bossJuke = 450
     player.images = ["player", "explosion1", "explosion2", "explosion3", "explosion4", "explosion4", "explosion5"]
     player.laserActive = player.bigLaserActive = 1 # Big laser is ready to fire
     #player.bigLaserActive = 1 
