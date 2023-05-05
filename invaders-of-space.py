@@ -10,7 +10,7 @@ highScore = []
 def draw(): # Pygame Zero draw function
     screen.blit('background', (0, 0))
     if gameStatus == 0: # display the title page
-        drawCentreText("PYGAME ZERO INVADERS\n\n\nType your name then\npress Enter to start\n(arrow keys move, space to fire)")
+        drawCentreText("INVADERS OF SPACE\n\nLeft & Right Arrow keys move\nSpacebar to fire\nUp Arrow to fire Big Laser\n\nType your name then\npress Enter to start\n")
         screen.draw.text(player.name, center=(400, 500), owidth=0.5, ocolor=(255,0,0), color=(0,64,255), fontsize=60)
     if gameStatus == 1: # playing the game
         player.image = player.images[math.floor(player.status/6)]
