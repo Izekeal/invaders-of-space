@@ -97,7 +97,19 @@ def readHighScore():
             highScore.append(line.rstrip())
     except:
         pass
-    highScore.append("LEVEL" + " " + str(level) + "         " + str(score) + "                 " + player.name)
+    #if score <= 0: Need to fix this, seems to be a limit to how long scoreSpacing can be
+    #    scoreSpacing = "                                                "
+    if score < 1000:
+        scoreSpacing = "                       "
+    if score >= 1000 and score < 10000:
+        scoreSpacing = "                     "
+    if score >= 10000 and score < 100000:
+        scoreSpacing = "                   "
+    if score >= 100000 and score < 1000000:
+        scoreSpacing = "                 "
+    if score >= 1000000:
+        scoreSpacing = "               "
+    highScore.append("     " + str(level) + "            " + str(score) + str(scoreSpacing) + player.name)
     highScore.sort(key=natural_key, reverse=True)
 
 def natural_key(string_):
@@ -113,7 +125,7 @@ def drawHighScore():
     global highScore
     y = 0
     screen.draw.text("TOP SCORES", midtop=(400, 30), owidth=0.5, ocolor=(255,255,255), color=(0,64,255), fontsize=60)
-    screen.draw.text("LEVEL        SCORE          NAME", topleft=(10, 90), owidth=0.5, ocolor=(255,255,255), color=(0,64,255), fontsize=60)
+    screen.draw.text("LEVEL    SCORE           NAME", topleft=(10, 90), owidth=0.5, ocolor=(255,255,255), color=(0,64,255), fontsize=60)
     for line in highScore:
         if y < 400:
             screen.draw.text(line, topleft=(10, 150+y), owidth=0.5, ocolor=(0,0,255), color=(255,255,0), fontsize=50)
