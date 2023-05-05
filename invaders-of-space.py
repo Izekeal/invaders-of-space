@@ -67,7 +67,7 @@ def update(): # Pygame Zero update function
                     if len(aliens) == 0: # Level has been cleared
                         level += 1
                         boss.active = False
-                        bossJuke = 450/level
+                        bossJuke = 450/level # Reduce this number as the levels increase, this keeps the chance of the boss pulling a juke fairly consistent instead of the chances decreasing each level
                         initAliens()
                         initBases()
                 else: # Player is out of lives, game over
@@ -353,7 +353,7 @@ def updateBoss():
             lasers[len(lasers)-1].status = 0
             lasers[len(lasers)-1].type = 0
     else: # TO-DO: Add in the scaling of the size of the boss png based off of the current level number, if that is even possible
-        if randint(0, 200) == 0:
+        if randint(0, 1200) == 0:
             boss.spawnPoint = randint(0,3) # Boss spawns in at one of four spawn points, chosen randomly
             boss.active = True
             if boss.spawnPoint == 0:
@@ -375,7 +375,7 @@ def updateBoss():
 
 def init():
     global lasers, powerUps, bigLasers, score, player, moveSequence, moveCounter, moveDelay, level, boss, powerUpSpawn, bossJuke
-    level = 5
+    level = 1
     initAliens()
     initBases()
     moveCounter = moveSequence = player.status = score = player.laserCountdown = player.shieldActive = 0 # what is player.laserCountdown from?  It's not being used anywhere
