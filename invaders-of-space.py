@@ -25,7 +25,7 @@ def draw(): # Pygame Zero draw function
         drawBigLasers()
         drawPowerUps()
         drawShield()
-        if player.status >= 30: # Has the player's ship exploded?
+        if player.status >= 30: # Has the player's ship finished exploding?
             if player.lives > 0:
                 drawCentreText("YOU WERE HIT!\nPress Enter to re-spawn")
             else:
@@ -44,7 +44,7 @@ def update(): # Pygame Zero update function
         if keyboard.RETURN and player.name != "":
             gameStatus = 1
     if gameStatus == 1:
-        if player.status < 30 and len(aliens) > 0: # Is the game still active?
+        if player.status < 30 and len(aliens) > 0: # Is the game still active? 
             checkKeys()
             updateLasers()
             updateBoss()
@@ -250,7 +250,7 @@ def checkLaserHit(l):
             #play a sound?
             lasers[l].status = 1
             stopShield() # Do I also need to cancel the clock timer from checkPowerUpHit()?
-        else:
+        if player.status == 0:
             sounds.explosion.play()
             player.status = 1
             lasers[l].status = 1
