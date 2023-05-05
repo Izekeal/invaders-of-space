@@ -248,16 +248,19 @@ def checkLaserHit(l):
 
 def checkPowerUpHit(p):
     global score, player
-    if player.collidepoint((powerUps[p].x, powerUps[p].y)):
+    if player.collidepoint((powerUps[p].x, powerUps[p].y)) and player.status == 0: # Player can only collect a power up if their ship isn't currently exploding
         powerUps[p].status = 1
-        score += 100
+        score += 200
         if powerUps[p].type == 1: # Player has collected a Big Laser power up
             player.bigLaserCount += 1
             #sounds.powerupbl.play() # TO-DO: Need to create this sfx
         if powerUps[p].type == 2: # Player has collected a Shield power up
-            player.shieldActive = 1
-            # clock.schedule(stopShield, 5.0) To avoid a bug, consider not using clock.schedule
-            # sounds.powerups.play() TO-DO: Add this sfx    
+            if player.shieldActive == 1:
+                score += 1000 # Player already has a shield, receives 1000 bonus points
+            else:
+                player.shieldActive = 1
+                # clock.schedule(stopShield, 5.0) To avoid a bug, consider not using clock.schedule
+                # sounds.powerups.play() TO-DO: Add this sfx
 
 def checkPlayerLaserHit(l):
     global score, boss
@@ -273,11 +276,11 @@ def checkPlayerLaserHit(l):
                 if randint(0, 5) < 4: # 0, 1, 2, 3 spawn a big laser. 4, 5 spawn a shield
                     powerUps.append(Actor("laserpowerup", (aliens[a].x, aliens[a].y)))
                     powerUps[len(powerUps)-1].status = 0
-                    powerUps[len(powerUps)-1].type = 1 # 1 = Big Laser, 2 = Shield
+                    powerUps[len(powerUps)-1].type = 1 # 1 = Big Laser
                 else:
                     powerUps.append(Actor("shieldpowerup", (aliens[a].x, aliens[a].y)))
                     powerUps[len(powerUps)-1].status = 0
-                    powerUps[len(powerUps)-1].type = 2 # 1 = Big Laser, 2 = Shield
+                    powerUps[len(powerUps)-1].type = 2 # 2 = Shield
     if boss.active:
         if boss.collidepoint((lasers[l].x, lasers[l].y)):
             lasers[l].status = 1
@@ -324,14 +327,14 @@ def updateAliens():
     moveSequence += 1
     if moveSequence == 40: moveSequence = 0
 
-def updateBoss():
+def updateBoss(): # TO-DO: Update the x and y movement speed calculations for the boss.  Currently it moves much too quickly beginning with level 3.  Something like (0.5*level)+1 for x might work better
     global boss, level, player, lasers
     if boss.active:
         boss.y += (0.3*level) # Note: X and Y coordinates can be decimals, good to know
         if boss.direction == 0:
             boss.x -= (1*level)
         else: boss.x += (1*level)
-        # add the logic to randomly change boss' direction here, start doing this in level 3
+        # add the logic to randomly change boss' direction here, start doing this in level 3.  Is there a better way to do this than an If/Else?
         if level >= 3:
             if randint(0, 150) == 0:
                 if boss.direction == 0:
@@ -372,7 +375,7 @@ def init():
     level = 1
     initAliens()
     initBases()
-    moveCounter = moveSequence = player.status = score = player.laserCountdown = player.shieldActive = 0
+    moveCounter = moveSequence = player.status = score = player.laserCountdown = player.shieldActive = 0 # what is player.laserCountdown from?  It's not being used anywhere
     lasers = []
     bigLasers = []
     powerUps = []
