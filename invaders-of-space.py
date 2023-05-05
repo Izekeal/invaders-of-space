@@ -97,9 +97,9 @@ def readHighScore():
             highScore.append(line.rstrip())
     except:
         pass
-    #if score <= 0: Need to fix this, seems to be a limit to how long scoreSpacing can be
-    #    scoreSpacing = "                                                "
-    if score < 1000:
+    if score <= 0: 
+        scoreSpacing = "                            "
+    if score < 1000 and score > 0:
         scoreSpacing = "                       "
     if score >= 1000 and score < 10000:
         scoreSpacing = "                     "
