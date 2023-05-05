@@ -263,7 +263,7 @@ def checkPowerUpHit(p):
                 # sounds.powerups.play() TO-DO: Add this sfx
 
 def checkPlayerLaserHit(l):
-    global score, boss
+    global score, boss, powerUpSpawn
     for b in range(len(bases)):
         if bases[b].collideLaser(lasers[l]):
             lasers[l].status = 1
@@ -272,7 +272,9 @@ def checkPlayerLaserHit(l):
             lasers[l].status = 1
             aliens[a].status = 1
             score += 1000
-            if randint(0, 6) == 0: # 1 in 7 chance to spawn a power up. TO-DO: Change this to a more controllable situation, something where a variable decrements and when it hits 0 a power up is spawned.
+            powerUpSpawn -= 1
+            if powerUpSpawn == 0:
+                powerUpSpawn = randint (0,5)+ 5 #This +5 should eventually be replaced with a constant to allow for better tracking/difficulty changes at higher levels
                 if randint(0, 5) < 4: # 0, 1, 2, 3 spawn a big laser. 4, 5 spawn a shield
                     powerUps.append(Actor("laserpowerup", (aliens[a].x, aliens[a].y)))
                     powerUps[len(powerUps)-1].status = 0
@@ -371,7 +373,7 @@ def updateBoss(): # TO-DO: Update the x and y movement speed calculations for th
                 boss.direction = 0
 
 def init():
-    global lasers, powerUps, bigLasers, score, player, moveSequence, moveCounter, moveDelay, level, boss
+    global lasers, powerUps, bigLasers, score, player, moveSequence, moveCounter, moveDelay, level, boss, powerUpSpawn
     level = 1
     initAliens()
     initBases()
@@ -386,6 +388,7 @@ def init():
     #player.bigLaserActive = 1 
     player.lives = player.bigLaserCount = 3 # The player starts with three Big Lasers to fire
     #player.bigLaserCount = 3 
+    powerUpSpawn = randint(0,5)+ 5 #This +5 should eventually be replaced with a constant to allow for better tracking/difficulty changes at higher levels
     player.name = ""
 
 
