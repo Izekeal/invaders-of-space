@@ -2,10 +2,8 @@
 
 import pgzrun, math, re, time
 from random import randint
-from functools import partial
 player = Actor("player", (400, 550))
 boss = Actor("boss")
-#points = Actor("1kp1")
 gameStatus = 0 # 0 = game is at main menu/waiting for player name , 1 = game is playing, 2 = game is over
 highScore = []
 
@@ -42,7 +40,7 @@ def drawCentreText(t):
     screen.draw.text(t , center=(400,300), owidth=0.5, ocolor=(255,255,255), color=(255,64,0), fontsize=60)
 
 def update(): # Pygame Zero update function
-    global moveCounter, player, gameStatus, lasers, bigLasers, powerUps, level, boss, bossJuke
+    global moveCounter, player, gameStatus, lasers, bigLasers, powerUps, level, boss, bossJuke, pointsPopup, pointsYPOS
     if gameStatus == 0:
         if keyboard.RETURN and player.name != "":
             gameStatus = 1
@@ -68,6 +66,8 @@ def update(): # Pygame Zero update function
                     lasers = [] # clear the screen of all lasers, big lasers, and power ups.  Should the boss be cleared as well, or does that happen somewhere else?
                     bigLasers = []
                     powerUps = []
+                    pointsPopup = []
+                    pointsYPOS = []
                     if len(aliens) == 0: # Level has been cleared
                         level += 1
                         boss.active = False
@@ -200,10 +200,6 @@ def makeBigLaserActive():
     global player
     player.bigLaserActive = 1
 
-def makePointsDisappear(p):
-    global pointsPopup
-    pointsPopup[p].status = 1
-
 def stopShield():
     global player
     player.shieldActive = 0
@@ -250,22 +246,25 @@ def updatePoints():
     global pointsPopup, pointsYPOS
     for p in range(min(len(pointsPopup), len(pointsYPOS))):
         pointsPopup[p].y -= 0.5
-        if pointsPopup[p].y + 30 < pointsYPOS[p]:
+        if pointsPopup[p].y < pointsYPOS[p] - 30:
             pointsPopup[p].status = 1
-            # TODO: Verify that pointsYPOS should contain only floats. Is this expected?
-            # checking if this element is an instance of Actor as floats do not have a status property
-            if isinstance(pointsYPOS[p], Actor):
-                pointsYPOS[p].status = 1
-    pointsPopup = listCleanup(pointsPopup)
-    pointsYPOS = listCleanup(pointsYPOS)
+    pointsPopup = pointsListCleanup(pointsPopup)
 
 def listCleanup(l):
     newList = []
     for i in range(len(l)):
-        # TODO: Verify that pointsYPOS should contain only floats. Is this expected?
-        # checking if this element is an instance of Actor as floats do not have a status property
         if isinstance(l[i], Actor) and l[i].status == 0:
             newList.append(l[i])
+    return newList
+
+def pointsListCleanup(l): # Needed a separate function for cleaning up the pointsPopup list as the identical position in the pointsYPOS list needs to be deleted at the same time as a value in pointsPopup
+    global pointsYPOS
+    newList = []
+    for i in range(len(l)):
+        if l[i].status == 0:
+            newList.append(l[i])
+        else:
+            del pointsYPOS[i]
     return newList
 
 def checkLaserHit(l):
@@ -297,7 +296,6 @@ def checkPowerUpHit(p):
                 score += 1000 # Player already has a shield, receives 1000 bonus points
             else:
                 player.shieldActive = 1
-                # clock.schedule(stopShield, 5.0) To avoid a bug, consider not using clock.schedule
                 # sounds.powerups.play() TO-DO: Add this sfx
 
 def checkPlayerLaserHit(l):
@@ -342,14 +340,10 @@ def checkBigLaserHit(l): # The Big Laser doesn't collide with the base segments 
             createPoints("5kpoints", boss.x, boss.y)
             score += 5000 # Should this be higher when using the Big Laser?
 
-def createPoints(t,x,y):
-    #global pointsYPOS
+def createPoints(t,x,y): # Create a pointsPopup at the location that the alien/boss ship was hit by a laser/Big Laser, track the initial Y position of this popup which will be used to check when to delete it from its list
     pointsPopup.append(Actor(t,(x,y)))
     pointsPopup[len(pointsPopup)-1].status = 0
     pointsYPOS.append(y)
-    #pointsYPOS[len(pointsYPOS)-1].status = 0
-    #clock.schedule(partial(makePointsDisappear, position), 1.0)
-    #Clock.schedule_interval(partial(my_callback, 'my value', 'my key'), 0.5)
 
 def updateAliens():
     global moveSequence, lasers, moveDelay
@@ -434,14 +428,11 @@ def init():
     powerUps = []
     pointsPopup = []
     pointsYPOS = []
-    # moveDelay = 30 # This is likely no longer necessary, as moveDelay is being defined/updated in initAliens(), need to check if I still need to reference it in global at the top of this function
     boss.active = False
     bossJuke = 450
     player.images = ["player", "explosion1", "explosion2", "explosion3", "explosion4", "explosion4", "explosion5"]
     player.laserActive = player.bigLaserActive = 1 # Big laser is ready to fire
-    #player.bigLaserActive = 1 
     player.lives = player.bigLaserCount = 3 # The player starts with three Big Lasers to fire
-    #player.bigLaserCount = 3 
     powerUpSpawn = randint(0,5)+ 5 #This +5 should eventually be replaced with a constant to allow for better tracking/difficulty changes at higher levels
     player.name = ""
 
