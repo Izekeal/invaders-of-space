@@ -248,18 +248,19 @@ def updatePowerUps(): # Scroll the power ups to the bottom of the screen, if the
 
 def updatePoints():
     global pointsPopup, pointsYPOS
-    for p in range(len(pointsPopup)):
+    for p in range(min(len(pointsPopup), len(pointsYPOS))):
         pointsPopup[p].y -= 0.5
         if pointsPopup[p].y + 30 < pointsYPOS[p]:
             pointsPopup[p].status = 1
-            pointsYPOS[p].status = 1
+            if isinstance(pointsYPOS[p], Actor):
+                pointsYPOS[p].status = 1
     pointsPopup = listCleanup(pointsPopup)
     pointsYPOS = listCleanup(pointsYPOS)
 
 def listCleanup(l):
     newList = []
     for i in range(len(l)):
-        if l[i].status == 0:
+        if isinstance(l[i], Actor) and l[i].status == 0:
             newList.append(l[i])
     return newList
 
