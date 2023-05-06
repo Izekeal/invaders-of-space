@@ -25,6 +25,7 @@ def draw(): # Pygame Zero draw function
         drawBigLasers()
         drawPowerUps()
         drawShield()
+        drawPoints()
         if player.status >= 30: # Has the player's ship finished exploding?
             if player.lives > 0:
                 drawCentreText("YOU WERE HIT!\nPress Enter to re-spawn")
@@ -39,7 +40,7 @@ def drawCentreText(t):
     screen.draw.text(t , center=(400,300), owidth=0.5, ocolor=(255,255,255), color=(255,64,0), fontsize=60)
 
 def update(): # Pygame Zero update function
-    global moveCounter, player, gameStatus, lasers, bigLasers, powerUps, level, boss, bossJuke
+    global moveCounter, player, gameStatus, lasers, bigLasers, powerUps, level, boss, bossJuke, pointsPopup, pointsYPOS
     if gameStatus == 0:
         if keyboard.RETURN and player.name != "":
             gameStatus = 1
@@ -49,6 +50,7 @@ def update(): # Pygame Zero update function
             updateLasers()
             updateBoss()
             updatePowerUps()
+            updatePoints()
             if moveCounter == 0: updateAliens() # Aliens move, their movement speed increases each level
             moveCounter += 1
             if moveCounter == moveDelay: # TO-DO: moveDelay should be updated each level instead of mid-level, will have better control over difficulty/aliens that way
@@ -64,6 +66,8 @@ def update(): # Pygame Zero update function
                     lasers = [] # clear the screen of all lasers, big lasers, and power ups.  Should the boss be cleared as well, or does that happen somewhere else?
                     bigLasers = []
                     powerUps = []
+                    pointsPopup = []
+                    pointsYPOS = []
                     if len(aliens) == 0: # Level has been cleared
                         level += 1
                         boss.active = False
@@ -158,6 +162,9 @@ def drawShield():
     if player.shieldActive == 1:
         screen.blit("playershield", (player.x-35, player.y-35))
 
+def drawPoints():
+    for p in range(len(pointsPopup)): pointsPopup[p].draw()
+
 def checkKeys(): # Update this function to add a "big" laser or bomb shot or something when the player presses down or up.  Maybe up is a shield, and down is a bomb that travels to the centre of the screen and then explodes
     global player, score
     if keyboard.left:
@@ -235,12 +242,29 @@ def updatePowerUps(): # Scroll the power ups to the bottom of the screen, if the
             powerUps[p].status = 1
     powerUps = listCleanup(powerUps)
 
+def updatePoints():
+    global pointsPopup, pointsYPOS
+    for p in range(min(len(pointsPopup), len(pointsYPOS))):
+        pointsPopup[p].y -= 0.5
+        if pointsPopup[p].y < pointsYPOS[p] - 30:
+            pointsPopup[p].status = 1
+    pointsPopup = pointsListCleanup(pointsPopup)
 
 def listCleanup(l):
     newList = []
     for i in range(len(l)):
+        if isinstance(l[i], Actor) and l[i].status == 0:
+            newList.append(l[i])
+    return newList
+
+def pointsListCleanup(l): # Needed a separate function for cleaning up the pointsPopup list as the identical position in the pointsYPOS list needs to be deleted at the same time as a value in pointsPopup
+    global pointsYPOS
+    newList = []
+    for i in range(len(l)):
         if l[i].status == 0:
             newList.append(l[i])
+        else:
+            del pointsYPOS[i]
     return newList
 
 def checkLaserHit(l):
@@ -272,11 +296,10 @@ def checkPowerUpHit(p):
                 score += 1000 # Player already has a shield, receives 1000 bonus points
             else:
                 player.shieldActive = 1
-                # clock.schedule(stopShield, 5.0) To avoid a bug, consider not using clock.schedule
                 # sounds.powerups.play() TO-DO: Add this sfx
 
 def checkPlayerLaserHit(l):
-    global score, boss, powerUpSpawn
+    global score, boss, powerUpSpawn, pointsPopup
     for b in range(len(bases)):
         if bases[b].collideLaser(lasers[l]):
             lasers[l].status = 1
@@ -284,6 +307,7 @@ def checkPlayerLaserHit(l):
         if aliens[a].collidepoint((lasers[l].x, lasers[l].y)):
             lasers[l].status = 1
             aliens[a].status = 1
+            createPoints("1kpoints", aliens[a].x, aliens[a].y)
             score += 1000
             powerUpSpawn -= 1
             if powerUpSpawn == 0:
@@ -299,6 +323,7 @@ def checkPlayerLaserHit(l):
     if boss.active:
         if boss.collidepoint((lasers[l].x, lasers[l].y)):
             lasers[l].status = 1
+            createPoints("5kpoints", boss.x, boss.y)
             boss.active = 0
             score += 5000
 
@@ -307,11 +332,18 @@ def checkBigLaserHit(l): # The Big Laser doesn't collide with the base segments 
     for a in range(len(aliens)):
         if aliens[a].collidepoint((bigLasers[l].x, bigLasers[l].y)): # Did the Big Laser hit an alien?
             aliens[a].status = 1
+            createPoints("1kpoints", aliens[a].x, aliens[a].y)
             score += 1000 # Should this be higher when using the Big Laser?  Should I add a "combo" effect to landing multiple consecutive hits with the Big Laser?
     if boss.active:
         if boss.collidepoint((bigLasers[l].x, bigLasers[l].y)): # Did the Big Laser hit the boss?
             boss.active = 0
+            createPoints("5kpoints", boss.x, boss.y)
             score += 5000 # Should this be higher when using the Big Laser?
+
+def createPoints(t,x,y): # Create a pointsPopup at the location that the alien/boss ship was hit by a laser/Big Laser, track the initial Y position of this popup which will be used to check when to delete it from its list
+    pointsPopup.append(Actor(t,(x,y)))
+    pointsPopup[len(pointsPopup)-1].status = 0
+    pointsYPOS.append(y)
 
 def updateAliens():
     global moveSequence, lasers, moveDelay
@@ -386,22 +418,21 @@ def updateBoss():
                 boss.direction = 0
 
 def init():
-    global lasers, powerUps, bigLasers, score, player, moveSequence, moveCounter, moveDelay, level, boss, powerUpSpawn, bossJuke
+    global lasers, powerUps, bigLasers, score, player, moveSequence, moveCounter, moveDelay, level, boss, powerUpSpawn, bossJuke, pointsPopup, pointsYPOS
     level = 1
     initAliens()
     initBases()
-    moveCounter = moveSequence = player.status = score = player.laserCountdown = player.shieldActive = 0 # what is player.laserCountdown from?  It's not being used anywhere
+    moveCounter = moveSequence = player.status = score = player.shieldActive = 0
     lasers = []
     bigLasers = []
     powerUps = []
-    # moveDelay = 30 # This is likely no longer necessary, as moveDelay is being defined/updated in initAliens(), need to check if I still need to reference it in global at the top of this function
+    pointsPopup = []
+    pointsYPOS = []
     boss.active = False
     bossJuke = 450
     player.images = ["player", "explosion1", "explosion2", "explosion3", "explosion4", "explosion4", "explosion5"]
     player.laserActive = player.bigLaserActive = 1 # Big laser is ready to fire
-    #player.bigLaserActive = 1 
     player.lives = player.bigLaserCount = 3 # The player starts with three Big Lasers to fire
-    #player.bigLaserCount = 3 
     powerUpSpawn = randint(0,5)+ 5 #This +5 should eventually be replaced with a constant to allow for better tracking/difficulty changes at higher levels
     player.name = ""
 
