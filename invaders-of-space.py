@@ -95,13 +95,24 @@ def on_key_down(key):
             if key.name == "BACKSPACE":
                 player.name = player.name[:-1]
 
+#Using ROT 47 to account for ASCII range of characters that could appear in a high score
+def rot47(s):
+    x = []
+    for i in range(len(s)):
+        j = ord(s[i])
+        if j >= 33 and j <= 126:
+            x.append(chr(33 + ((j + 14) % 94)))
+        else:
+            x.append(s[i])
+    return ''.join(x)
+
 def readHighScore():
     global highScore, score, player
     highScore = []
     try:
         hsFile = open("highscores.txt", "r")
         for line in hsFile:
-            highScore.append(line.rstrip())
+            highScore.append(rot47(line.rstrip()))
     except:
         pass
     if score <= 0: 
@@ -116,7 +127,7 @@ def readHighScore():
         scoreSpacing = "                 "
     if score >= 1000000:
         scoreSpacing = "               "
-    highScore.append("     " + str(level) + "            " + str(score) + str(scoreSpacing) + player.name)
+    highScore.append(rot47(rot47("     " + str(level) + "            " + str(score) + str(scoreSpacing) + player.name)))
     highScore.sort(key=natural_key, reverse=True)
 
 def natural_key(string_):
@@ -126,7 +137,7 @@ def writeHighScore():
     global highScore
     hsFile = open("highscores.txt", "w")
     for line in highScore:
-        hsFile.write(line + "\n")
+        hsFile.write(rot47(line + "\n"))
 
 def drawHighScore():
     global highScore
@@ -273,14 +284,13 @@ def pointsListCleanup(l): # Needed a separate function for cleaning up the point
 def checkLaserHit(l):
     global player
     if player.collidepoint((lasers[l].x, lasers[l].y)):
-        if player.shieldActive == 1:
-            #play a sound?
-            lasers[l].status = 1
-            stopShield() # Do I also need to cancel the clock timer from checkPowerUpHit()?
-        if player.status == 0:
+        lasers[l].status = 1
+        if player.status == 0 and player.shieldActive == 0:
             sounds.explosion.play()
             player.status = 1
-            lasers[l].status = 1
+        if player.shieldActive == 1:
+            #play a sound?
+            stopShield()
     for b in range(len(bases)):
         if bases[b].collideLaser(lasers[l]):
             bases[b].height -= 10
@@ -415,7 +425,7 @@ def updateBoss():
                 boss.x = 300
                 boss.y = 25
                 boss.direction = randint(0,1) # Choose a random direction of left or right since this spawns boss in the middle of the stage
-            if boss.spawnPoint == 3:
+            if boss.spawnPoint == 3: # TO-DO: Consider moving this spawn point
                 boss.x = 800
                 boss.y = 200
                 boss.direction = 0
