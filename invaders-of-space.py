@@ -40,7 +40,7 @@ def drawCentreText(t):
     screen.draw.text(t , center=(400,300), owidth=0.5, ocolor=(255,255,255), color=(255,64,0), fontsize=60)
 
 def update(): # Pygame Zero update function
-    global moveCounter, player, gameStatus, lasers, bigLasers, powerUps, level, boss, bossJuke, pointsPopup, pointsYPOS
+    global moveCounter, player, gameStatus, lasers, bigLasers, powerUps, level, boss, bossJuke, pointsPopup, pointsYPOS, bossXSpeed, bossYSpeed, difficultyMod
     if gameStatus == 0:
         if keyboard.RETURN and player.name != "":
             gameStatus = 1
@@ -71,7 +71,10 @@ def update(): # Pygame Zero update function
                     if len(aliens) == 0: # Level has been cleared
                         level += 1
                         boss.active = False
-                        bossJuke = 450/level # Reduce this number as the levels increase, this keeps the chance of the boss pulling a juke fairly consistent instead of the chances decreasing each level
+                        bossJuke = math.floor(450/level) # Reduce this number as the levels increase, this keeps the chance of the boss pulling a juke fairly consistent instead of the chances decreasing each level
+                        bossXSpeed = (0.5 * level) + 1 # Boss gets faster each level
+                        bossYSpeed = (0.3 * level)
+                        difficultyMod = level*2 # Game gets harder each level
                         initAliens()
                         initBases()
                 else: # Player is out of lives, game over
@@ -168,9 +171,9 @@ def drawPoints():
 def checkKeys(): # Update this function to add a "big" laser or bomb shot or something when the player presses down or up.  Maybe up is a shield, and down is a bomb that travels to the centre of the screen and then explodes
     global player, score
     if keyboard.left:
-        if player.x > 40: player.x -= 5
+        if player.x > 40: player.x -= playerSpeed
     if keyboard.right:
-        if player.x < 760: player.x += 5
+        if player.x < 760: player.x += playerSpeed
     if keyboard.space:
         if player.laserActive == 1:
             sounds.gun.play()
@@ -179,7 +182,7 @@ def checkKeys(): # Update this function to add a "big" laser or bomb shot or som
             lasers.append(Actor("laser2", (player.x,player.y-32)))
             lasers[len(lasers)-1].status = 0
             lasers[len(lasers)-1].type = 1
-            score -= 100
+            score -= laserCost
     if keyboard.up: # Shoot a Big Laser, this laser clips through the bases and doesn't decay when hitting an alien or the boss
         if player.bigLaserCount > 0:
             if player.bigLaserActive == 1:
@@ -190,7 +193,7 @@ def checkKeys(): # Update this function to add a "big" laser or bomb shot or som
                 bigLasers.append(Actor("laser3", (player.x,player.y-32)))
                 bigLasers[len(bigLasers)-1].status = 0
                 bigLasers[len(bigLasers)-1].type = 1
-                score -= 500 # Shooting a big laser comes with a larger score penalty
+                score -= bigLaserCost # Shooting a big laser comes with a larger score penalty
 
 def makeLaserActive():
     global player
@@ -214,18 +217,18 @@ def updateLasers():
     global lasers, bigLasers, aliens
     for l in range(len(lasers)):
         if lasers[l].type == 0:
-            lasers[l].y += 2
+            lasers[l].y += alienLaserSpeed
             checkLaserHit(l)
             if lasers[l].y > 600:
                 lasers[l].status = 1
         if lasers[l].type == 1:
-            lasers[l].y -= 5
+            lasers[l].y -= playerLaserSpeed
             checkPlayerLaserHit(l)
             if lasers[l].y < 10:
                 lasers[l].status = 1
     for l in range(len(bigLasers)):
         if bigLasers[l].type == 1:
-            bigLasers[l].y -= 8 # Big laser moves faster than the normal player laser
+            bigLasers[l].y -= bigLaserSpeed # Big laser moves faster than the normal player laser
             checkBigLaserHit(l)
             if bigLasers[l].y < 10: # Has the Big Laser left the top of the screen?
                 bigLasers[l].status = 1
@@ -236,7 +239,7 @@ def updateLasers():
 def updatePowerUps(): # Scroll the power ups to the bottom of the screen, if they reach the bottom without colliding with the player, they despawn
     global powerUps
     for p in range(len(powerUps)):
-        powerUps[p].y += 3 # TO-DO: Make sure that this is a good speed for the powerups to travel at
+        powerUps[p].y += powerUpSpeed # TO-DO: Make sure that this is a good speed for the powerups to travel at
         checkPowerUpHit(p)
         if powerUps[p].y > 600:
             powerUps[p].status = 1
@@ -287,13 +290,13 @@ def checkPowerUpHit(p):
     global score, player
     if player.collidepoint((powerUps[p].x, powerUps[p].y)) and player.status == 0: # Player can only collect a power up if their ship isn't currently exploding
         powerUps[p].status = 1
-        score += 200
+        score += powerUpPoints
         if powerUps[p].type == 1: # Player has collected a Big Laser power up
             player.bigLaserCount += 1
             #sounds.powerupbl.play() # TO-DO: Need to create this sfx
         if powerUps[p].type == 2: # Player has collected a Shield power up
             if player.shieldActive == 1:
-                score += 1000 # Player already has a shield, receives 1000 bonus points
+                score += extraShieldPoints # Player already has a shield, receives 1000 bonus points
             else:
                 player.shieldActive = 1
                 # sounds.powerups.play() TO-DO: Add this sfx
@@ -308,10 +311,10 @@ def checkPlayerLaserHit(l):
             lasers[l].status = 1
             aliens[a].status = 1
             createPoints("1kpoints", aliens[a].x, aliens[a].y)
-            score += 1000
+            score += alienPoints
             powerUpSpawn -= 1
             if powerUpSpawn == 0:
-                powerUpSpawn = randint (0,5)+ 5 #This +5 should eventually be replaced with a constant to allow for better tracking/difficulty changes at higher levels
+                powerUpSpawn = randint (0,5) + powerUpSpawnRate #This +5 should eventually be replaced with a constant to allow for better tracking/difficulty changes at higher levels
                 if randint(0, 5) < 4: # 0, 1, 2, 3 spawn a big laser. 4, 5 spawn a shield
                     powerUps.append(Actor("laserpowerup", (aliens[a].x, aliens[a].y)))
                     powerUps[len(powerUps)-1].status = 0
@@ -325,20 +328,20 @@ def checkPlayerLaserHit(l):
             lasers[l].status = 1
             createPoints("5kpoints", boss.x, boss.y)
             boss.active = 0
-            score += 5000
+            score += bossPoints
 
 def checkBigLaserHit(l): # The Big Laser doesn't collide with the base segments and doesn't decay if it hits an alien. It continues until it has reached the top of the screen. Aliens don't spawn a power up when hit with the Big Laser
     global score, boss
     for a in range(len(aliens)):
         if aliens[a].collidepoint((bigLasers[l].x, bigLasers[l].y)): # Did the Big Laser hit an alien?
             aliens[a].status = 1
-            createPoints("1kpoints", aliens[a].x, aliens[a].y)
-            score += 1000 # Should this be higher when using the Big Laser?  Should I add a "combo" effect to landing multiple consecutive hits with the Big Laser?
+            createPoints("2kpoints", aliens[a].x, aliens[a].y)
+            score += alienBLPoints # Should this be higher when using the Big Laser?  Should I add a "combo" effect to landing multiple consecutive hits with the Big Laser?
     if boss.active:
         if boss.collidepoint((bigLasers[l].x, bigLasers[l].y)): # Did the Big Laser hit the boss?
             boss.active = 0
-            createPoints("5kpoints", boss.x, boss.y)
-            score += 5000 # Should this be higher when using the Big Laser?
+            createPoints("10kpoints", boss.x, boss.y)
+            score += bossBLPoints # Should this be higher when using the Big Laser?
 
 def createPoints(t,x,y): # Create a pointsPopup at the location that the alien/boss ship was hit by a laser/Big Laser, track the initial Y position of this popup which will be used to check when to delete it from its list
     pointsPopup.append(Actor(t,(x,y)))
@@ -377,10 +380,10 @@ def updateAliens():
 def updateBoss():
     global boss, level, player, lasers
     if boss.active:
-        boss.y += (0.3*level) # Note: X and Y coordinates can be decimals, good to know
+        boss.y += bossYSpeed # Note: X and Y coordinates can be decimals, good to know
         if boss.direction == 0:
-            boss.x -= (0.5*level) + 1 # Eventually replace this with a constant
-        else: boss.x += (0.5*level) + 1
+            boss.x -= bossXSpeed # Eventually replace this with a constant
+        else: boss.x += bossXSpeed
         # add the logic to randomly change boss' direction here, start doing this in level 3.  Is there a better way to do this than an If/Else?
         if level >= 3:
             if randint(0, bossJuke) == 0:
@@ -418,10 +421,8 @@ def updateBoss():
                 boss.direction = 0
 
 def init():
-    global lasers, powerUps, bigLasers, score, player, moveSequence, moveCounter, moveDelay, level, boss, powerUpSpawn, bossJuke, pointsPopup, pointsYPOS
+    global lasers, powerUps, bigLasers, score, player, moveSequence, moveCounter, moveDelay, level, boss, powerUpSpawn, bossJuke, pointsPopup, pointsYPOS, alienPoints, alienBLPoints, bossPoints, bossBLPoints, bossXSpeed, bossYSpeed, playerSpeed, powerUpSpeed, powerUpPoints, extraShieldPoints, alienLaserSpeed, playerLaserSpeed, bigLaserSpeed, laserCost, bigLaserCost, difficultyMod, powerUpSpawnRate
     level = 1
-    initAliens()
-    initBases()
     moveCounter = moveSequence = player.status = score = player.shieldActive = 0
     lasers = []
     bigLasers = []
@@ -429,18 +430,38 @@ def init():
     pointsPopup = []
     pointsYPOS = []
     boss.active = False
+    #Add all constants here
     bossJuke = 450
+    alienPoints = 1000
+    alienBLPoints = 2000
+    bossPoints = 5000
+    bossBLPoints = 10000
+    bossXSpeed = (0.5 * level) + 1
+    bossYSpeed = (0.3 * level)
+    playerSpeed = 5
+    powerUpSpeed = 3
+    powerUpPoints = 200
+    powerUpSpawnRate = 5
+    extraShieldPoints = 1000
+    alienLaserSpeed = 2
+    playerLaserSpeed = 5
+    bigLaserSpeed = 8
+    laserCost = 100
+    bigLaserCost = 500
+    difficultyMod = level*2
     player.images = ["player", "explosion1", "explosion2", "explosion3", "explosion4", "explosion4", "explosion5"]
     player.laserActive = player.bigLaserActive = 1 # Big laser is ready to fire
     player.lives = player.bigLaserCount = 3 # The player starts with three Big Lasers to fire
-    powerUpSpawn = randint(0,5)+ 5 #This +5 should eventually be replaced with a constant to allow for better tracking/difficulty changes at higher levels
+    powerUpSpawn = randint(0,5) + powerUpSpawnRate #This +5 should eventually be replaced with a constant to allow for better tracking/difficulty changes at higher levels
     player.name = ""
+    initAliens()
+    initBases()
 
 
 def initAliens():
     global aliens, moveCounter, moveSequence, moveDelay, level
     aliens = []
-    moveDelay = 30 - level*2 # prevents the game from speeding up at an unreasonable rate.  Can experiment with how much to decrease per level to find a "sweet spot" of difficulty.  Maybe 2*level
+    moveDelay = 30 - difficultyMod # prevents the game from speeding up at an unreasonable rate.  Can experiment with how much to decrease per level to find a "sweet spot" of difficulty.  Maybe 2*level
     if moveDelay < 1: moveDelay = 1 # If moveDelay becomes 0, the game stops
     moveCounter = moveSequence = 0
     for a in range(18):
