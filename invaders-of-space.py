@@ -252,6 +252,8 @@ def updatePoints():
         pointsPopup[p].y -= 0.5
         if pointsPopup[p].y + 30 < pointsYPOS[p]:
             pointsPopup[p].status = 1
+            # TODO: Verify that pointsYPOS should contain only floats. Is this expected?
+            # checking if this element is an instance of Actor as floats do not have a status property
             if isinstance(pointsYPOS[p], Actor):
                 pointsYPOS[p].status = 1
     pointsPopup = listCleanup(pointsPopup)
@@ -260,6 +262,8 @@ def updatePoints():
 def listCleanup(l):
     newList = []
     for i in range(len(l)):
+        # TODO: Verify that pointsYPOS should contain only floats. Is this expected?
+        # checking if this element is an instance of Actor as floats do not have a status property
         if isinstance(l[i], Actor) and l[i].status == 0:
             newList.append(l[i])
     return newList
