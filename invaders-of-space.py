@@ -1,7 +1,16 @@
 # Original code & tutorial from Mark Vanstone: https://education.technovisual.co.uk/ff-portfolio/coding-games-with-pygame-zero-part-five-space-invaders-2/
 
-import pgzrun, math, re, time
 from random import randint
+
+import math
+import pgzrun
+import re
+
+from pgzero.actor import Actor
+from pgzero.clock import clock
+from pgzero.keyboard import keyboard
+from pgzero.loaders import sounds
+
 player = Actor("player", (400, 550))
 boss = Actor("boss")
 gameStatus = 0 # 0 = game is at main menu/waiting for player name , 1 = game is playing, 2 = game is over
@@ -45,7 +54,7 @@ def update(): # Pygame Zero update function
         if keyboard.RETURN and player.name != "":
             gameStatus = 1
     if gameStatus == 1:
-        if player.status < 30 and len(aliens) > 0: # Is the game still active? 
+        if player.status < 30 and len(aliens) > 0: # Is the game still active?
             checkKeys()
             updateLasers()
             updateBoss()
@@ -60,7 +69,7 @@ def update(): # Pygame Zero update function
                 if player.status == 30:
                     player.lives -= 1
         else:
-            if keyboard.RETURN: 
+            if keyboard.RETURN:
                 if player.lives > 0: # Player respawns and the game continues
                     player.status = 0
                     lasers = [] # clear the screen of all lasers, big lasers, power ups, and points popups.
@@ -115,7 +124,7 @@ def readHighScore():
             highScore.append(rot47(line.rstrip()))
     except:
         pass
-    if score <= 0: 
+    if score <= 0:
         scoreSpacing = "                            "
     if score < 1000 and score > 0:
         scoreSpacing = "                       "
@@ -323,7 +332,7 @@ def checkPlayerLaserHit(l): # Has the player's regular laser shot hit anything?
             score += alienPoints
             powerUpSpawn -= 1 # Only hitting an alien ship with the regular laser will spawn a powerup
             if powerUpSpawn == 0:
-                powerUpSpawn = randint (0,5) + powerUpSpawnRate 
+                powerUpSpawn = randint (0,5) + powerUpSpawnRate
                 if randint(0, 5) < 4: # 0, 1, 2, 3 spawn a big laser. 4, 5 spawn a shield
                     powerUps.append(Actor("laserpowerup", (aliens[a].x, aliens[a].y)))
                     powerUps[len(powerUps)-1].status = 0
@@ -454,8 +463,8 @@ def init():
     difficultyMod = level*2
     player.images = ["player", "explosion1", "explosion2", "explosion3", "explosion4", "explosion4", "explosion5"]
     player.laserActive = player.bigLaserActive = 1
-    player.lives = player.bigLaserCount = 3 
-    powerUpSpawn = randint(0,5) + powerUpSpawnRate 
+    player.lives = player.bigLaserCount = 3
+    powerUpSpawn = randint(0,5) + powerUpSpawnRate
     player.name = ""
     initAliens()
     initBases()
