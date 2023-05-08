@@ -8,6 +8,7 @@ import pgzrun
 import re
 
 from pgzero.actor import Actor
+from pgzero.animation import animate
 from pgzero.clock import clock
 from pgzero.keyboard import keyboard
 from pgzero.loaders import sounds
