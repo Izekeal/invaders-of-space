@@ -7,6 +7,7 @@ import pgzrun
 import re
 
 from pgzero.actor import Actor
+from pgzero.keyboard import keyboard
 
 player = Actor("player", (400, 550))
 boss = Actor("boss")
