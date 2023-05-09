@@ -364,6 +364,7 @@ def checkPowerUpHit(p):  # Has the player collected a power up?
         if powerUps[p].type == 2:  # Player has collected a Shield power up
             if player.shieldActive == 1:
                 score += extraShieldPoints  # Player already has a shield, receives 1000 bonus points
+                createPoints("1kpoints", player.x, player.y-32)
             else:
                 player.shieldActive = 1
 
@@ -424,15 +425,12 @@ def createPoints(t, x, y):
 
 
 def updateAliens():  # Move the alien ships
-    global moveSequence, lasers, moveDelay
+    global moveSequence, lasers
     movex = movey = 0
     if moveSequence < 10 or moveSequence > 30:
         movex = -15
     if moveSequence == 10 or moveSequence == 30:
         movey = 40 + (5 * level)
-        moveDelay -= 1
-        if moveDelay < 1:
-            moveDelay = 1  # If moveDelay becomes 0, the game stops
     if 10 < moveSequence < 30:
         movex = 15
     for a in range(len(aliens)):
@@ -464,7 +462,8 @@ def updateBoss():  # Move the boss or check to see if the boss spawns
             boss.x += bossXSpeed
         if level >= 3:  # Boss doesn't start to "juke" until level 3
 
-            # When the boss is travelling left, there is a chance it will randomly move to the right, doing a "juke"
+            # When the boss is travelling left, there is a chance it will randomly
+            # move to the right, doing a "juke"
             if randint(0, bossJuke) == 0:
                 if boss.direction == 0:
                     boss.direction = 1
@@ -486,7 +485,9 @@ def updateBoss():  # Move the boss or check to see if the boss spawns
     # TO-DO: Add in the scaling of the size of the boss png based off of
     # the current level number, if that is even possible
     else:
-        if randint(0, 1200) == 0:
+        # Boss has a random chance to spawn that increases as the game
+        # speed increases to keep the spawn chance mostly consistent
+        if randint(0, (1200-(level*50))) == 0: 
             boss.spawnPoint = randint(0, 2)  # Boss spawns in at one of three spawn points, chosen randomly
             boss.active = True
             if boss.spawnPoint == 0:
@@ -546,7 +547,9 @@ def initAliens():
     global aliens, moveCounter, moveSequence, moveDelay, level
     aliens = []
     moveDelay = 30 - difficultyMod  # Speed up the game
-    if moveDelay < 1: moveDelay = 1  # If moveDelay becomes 0, the game stops
+    # If moveDelay becomes 0, the game stops. moveDelay at a value of 1 is the 
+    # fastest the game can be. Game reaches maximum speed at level 15
+    if moveDelay < 1: moveDelay = 1  
     moveCounter = moveSequence = 0
     for a in range(18):
         aliens.append(Actor("alien1", (210 + (a % 6) * 80, 100 + (int(a / 6) * 64))))
