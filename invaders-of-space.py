@@ -13,11 +13,10 @@ from pgzero.clock import clock
 from pgzero.keyboard import keyboard
 from pgzero.loaders import sounds
 
-player = Actor("player", (400, 550))
-boss = Actor("boss")
 gameStatus = 0  # 0 = game is at main menu/waiting for player name , 1 = game is playing, 2 = game is over
 highScore = []
-
+player = Actor("player", (400, 550))
+boss = Actor("boss")
 
 def draw():  # Pygame Zero draw function
     screen.blit('background', (0, 0))
@@ -133,7 +132,7 @@ def readHighScore():
     global highScore, score, player
     highScore = []
     try:
-        hsFile = open("highscores.txt", "r")
+        hsFile = open("data/highscores.txt", "r")
         for line in hsFile:
             highScore.append(rot47(line.rstrip()))
     except:
@@ -160,7 +159,7 @@ def natural_key(string_):
 
 def writeHighScore():
     global highScore
-    hsFile = open("highscores.txt", "w")
+    hsFile = open("data/highscores.txt", "w")
     for line in highScore:
         hsFile.write(rot47(line + "\n"))
 
@@ -183,12 +182,12 @@ def drawHighScore():
 
 def drawLives():
     for l in range(player.lives):
-        screen.blit("life", (10 + (l * 32), 10))
+        screen.blit('life', (10 + (l * 32), 10))
 
 
 def drawBigLasers():
     for l in range(player.bigLaserCount):
-        screen.blit("biglaser", ((10 + (player.lives * 32)) + (l * 13),
+        screen.blit('biglaser', ((10 + (player.lives * 32)) + (l * 13),
                                  10))  # Keeps the top left of the screen consistent and clean by keeping the big laser and life indicators as close together as possible
 
 
@@ -215,7 +214,7 @@ def drawPowerUps():
 
 def drawShield():
     if player.shieldActive == 1:
-        screen.blit("playershield", (player.x - 35, player.y - 35))
+        screen.blit('playershield', (player.x - 35, player.y - 35))
 
 
 def drawPoints():
@@ -534,7 +533,7 @@ def init():
     laserCost = 100
     bigLaserCost = 500
     difficultyMod = level * 2
-    player.images = ["player", "explosion1", "explosion2", "explosion3", "explosion4", "explosion4", "explosion5"]
+    player.images = ["player","explosion1","explosion2","explosion3","explosion4","explosion5"]
     player.laserActive = player.bigLaserActive = 1
     player.lives = player.bigLaserCount = 3
     powerUpSpawn = randint(0, 5) + powerUpSpawnRate
@@ -580,7 +579,6 @@ def initBases():
             bases[bc].collideLaser = collideLaser.__get__(bases[bc])
             bases[bc].height = 60
             bc += 1
-
 
 init()
 pgzrun.go()
