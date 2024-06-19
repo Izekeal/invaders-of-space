@@ -11,6 +11,8 @@ Collect power ups and dodge the alien lasers as you try to reach a high score!
 
 ## Requirements
 
+[Python 3.7+](https://www.python.org/downloads/)
+
 First setup your local Python environment
 ```
 python3 -m venv venv
